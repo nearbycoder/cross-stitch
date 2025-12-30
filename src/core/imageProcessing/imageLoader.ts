@@ -14,10 +14,26 @@ export function validateImageSize(file: File, maxSizeBytes: number = 10 * 1024 *
 }
 
 /**
+ * Get optimal max dimensions based on device type
+ */
+function getMaxImageDimensions(): { maxWidth: number; maxHeight: number } {
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  
+  if (isMobile) {
+    // Mobile: Limit to 2000x2000 to prevent memory issues
+    return { maxWidth: 2000, maxHeight: 2000 };
+  } else {
+    // Desktop: Limit to 4000x4000 for reasonable performance
+    return { maxWidth: 4000, maxHeight: 4000 };
+  }
+}
+
+/**
  * Load an image file and convert to ImageData
+ * Automatically resizes large images to optimize performance
  *
  * @param file - Image file to load
- * @returns Promise resolving to ImageData
+ * @returns Promise resolving to ImageData (resized if needed)
  */
 export async function loadImageFile(file: File): Promise<ImageData> {
   // Validate file type
@@ -42,6 +58,9 @@ export async function loadImageFile(file: File): Promise<ImageData> {
       img.src = url;
     });
 
+    // Get max dimensions based on device
+    const { maxWidth, maxHeight } = getMaxImageDimensions();
+
     // Create canvas and get context
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -50,12 +69,34 @@ export async function loadImageFile(file: File): Promise<ImageData> {
       throw new Error('Failed to get canvas context');
     }
 
-    // Set canvas size to image size
-    canvas.width = img.width;
-    canvas.height = img.height;
-
-    // Draw image to canvas
-    ctx.drawImage(img, 0, 0);
+    // Check if resizing is needed
+    const needsResize = img.width > maxWidth || img.height > maxHeight;
+    
+    if (needsResize) {
+      // Calculate new dimensions while maintaining aspect ratio
+      const widthRatio = maxWidth / img.width;
+      const heightRatio = maxHeight / img.height;
+      const ratio = Math.min(widthRatio, heightRatio);
+      
+      const newWidth = Math.round(img.width * ratio);
+      const newHeight = Math.round(img.height * ratio);
+      
+      // Set canvas to resized dimensions
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+      
+      // Use high-quality image smoothing for resizing
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      
+      // Draw resized image
+      ctx.drawImage(img, 0, 0, newWidth, newHeight);
+    } else {
+      // Use original dimensions
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+    }
 
     // Get image data
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -69,9 +110,10 @@ export async function loadImageFile(file: File): Promise<ImageData> {
 
 /**
  * Load an image from a URL and convert to ImageData
+ * Automatically resizes large images to optimize performance
  *
  * @param url - Image URL to load
- * @returns Promise resolving to ImageData
+ * @returns Promise resolving to ImageData (resized if needed)
  */
 export async function loadImageFromURL(url: string): Promise<ImageData> {
   const img = new Image();
@@ -83,6 +125,9 @@ export async function loadImageFromURL(url: string): Promise<ImageData> {
     img.src = url;
   });
 
+  // Get max dimensions based on device
+  const { maxWidth, maxHeight } = getMaxImageDimensions();
+
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
 
@@ -90,9 +135,31 @@ export async function loadImageFromURL(url: string): Promise<ImageData> {
     throw new Error('Failed to get canvas context');
   }
 
-  canvas.width = img.width;
-  canvas.height = img.height;
-  ctx.drawImage(img, 0, 0);
+  // Check if resizing is needed
+  const needsResize = img.width > maxWidth || img.height > maxHeight;
+  
+  if (needsResize) {
+    // Calculate new dimensions while maintaining aspect ratio
+    const widthRatio = maxWidth / img.width;
+    const heightRatio = maxHeight / img.height;
+    const ratio = Math.min(widthRatio, heightRatio);
+    
+    const newWidth = Math.round(img.width * ratio);
+    const newHeight = Math.round(img.height * ratio);
+    
+    canvas.width = newWidth;
+    canvas.height = newHeight;
+    
+    // Use high-quality image smoothing for resizing
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    
+    ctx.drawImage(img, 0, 0, newWidth, newHeight);
+  } else {
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.drawImage(img, 0, 0);
+  }
 
   return ctx.getImageData(0, 0, canvas.width, canvas.height);
 }
