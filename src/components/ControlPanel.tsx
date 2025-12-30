@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { usePatternStore } from '../store/patternStore';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
@@ -16,6 +17,14 @@ export function ControlPanel() {
     originalImage,
     pattern,
   } = usePatternStore();
+  const [gridWidthInput, setGridWidthInput] = useState<string>(settings.gridWidth.toString());
+  const [gridHeightInput, setGridHeightInput] = useState<string>(settings.gridHeight.toString());
+
+  // Sync local state with settings when settings change externally
+  useEffect(() => {
+    setGridWidthInput(settings.gridWidth.toString());
+    setGridHeightInput(settings.gridHeight.toString());
+  }, [settings.gridWidth, settings.gridHeight]);
 
   return (
     <Card>
@@ -75,10 +84,21 @@ export function ControlPanel() {
               type="number"
               min="10"
               max="500"
-              value={settings.gridWidth}
-              onChange={(e) =>
-                updateSettings({ gridWidth: parseInt(e.target.value) || 10 })
-              }
+              value={gridWidthInput}
+              onChange={(e) => {
+                setGridWidthInput(e.target.value);
+                const numValue = parseInt(e.target.value);
+                if (!isNaN(numValue) && numValue >= 10 && numValue <= 500) {
+                  updateSettings({ gridWidth: numValue });
+                }
+              }}
+              onBlur={(e) => {
+                const numValue = parseInt(e.target.value);
+                if (isNaN(numValue) || numValue < 10 || numValue > 500) {
+                  setGridWidthInput(settings.gridWidth.toString());
+                }
+              }}
+              placeholder="100"
               disabled={isProcessing}
               className="w-full"
             />
@@ -93,10 +113,21 @@ export function ControlPanel() {
               type="number"
               min="10"
               max="500"
-              value={settings.gridHeight}
-              onChange={(e) =>
-                updateSettings({ gridHeight: parseInt(e.target.value) || 10 })
-              }
+              value={gridHeightInput}
+              onChange={(e) => {
+                setGridHeightInput(e.target.value);
+                const numValue = parseInt(e.target.value);
+                if (!isNaN(numValue) && numValue >= 10 && numValue <= 500) {
+                  updateSettings({ gridHeight: numValue });
+                }
+              }}
+              onBlur={(e) => {
+                const numValue = parseInt(e.target.value);
+                if (isNaN(numValue) || numValue < 10 || numValue > 500) {
+                  setGridHeightInput(settings.gridHeight.toString());
+                }
+              }}
+              placeholder="100"
               disabled={isProcessing}
               className="w-full"
             />

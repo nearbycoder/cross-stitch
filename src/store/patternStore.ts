@@ -76,26 +76,101 @@ async function mapImageToGridChunked(
   gridHeight: number,
   dmcPalette: DMCThread[]
 ): Promise<PatternCell[][]> {
-  const grid: PatternCell[][] = [];
-  const chunkSize = 50; // Process 50 rows at a time (larger chunks since we're faster now)
+  // Detect mobile device and adjust chunk size accordingly
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const totalCells = gridWidth * gridHeight;
   
-  // Calculate scale factors
+  // Use smaller chunks on mobile or for large grids
+  // Mobile: 10 rows, Desktop large grids (>150x150): 25 rows, Desktop normal: 50 rows
+  let chunkSize: number;
+  if (isMobile) {
+    chunkSize = 10; // Much smaller chunks on mobile
+  } else if (totalCells > 22500) { // > 150x150
+    chunkSize = 25;
+  } else {
+    chunkSize = 50;
+  }
+  
+  const grid: PatternCell[][] = [];
+  
+  // If image is already resized to grid dimensions, use faster direct pixel mapping
+  if (imageData.width === gridWidth && imageData.height === gridHeight) {
+    const data = imageData.data;
+    const colorLookup = new Map<string, DMCThread>();
+    
+    // Fast color matching function
+    const findClosestDMC = (color: RGBColor): DMCThread => {
+      const cacheKey = `${color.r},${color.g},${color.b}`;
+      if (colorLookup.has(cacheKey)) {
+        return colorLookup.get(cacheKey)!;
+      }
+      
+      let minDistanceSq = Infinity;
+      let closestDMC = dmcPalette[0];
+      
+      for (const dmc of dmcPalette) {
+        const dr = color.r - dmc.rgb.r;
+        const dg = color.g - dmc.rgb.g;
+        const db = color.b - dmc.rgb.b;
+        const distanceSq = dr * dr + dg * dg + db * db;
+        
+        if (distanceSq < minDistanceSq) {
+          minDistanceSq = distanceSq;
+          closestDMC = dmc;
+        }
+      }
+      
+      colorLookup.set(cacheKey, closestDMC);
+      return closestDMC;
+    };
+    
+    // Process in chunks for mobile
+    for (let startY = 0; startY < gridHeight; startY += chunkSize) {
+      const endY = Math.min(startY + chunkSize, gridHeight);
+      
+      for (let y = startY; y < endY; y++) {
+        grid[y] = [];
+        
+        for (let x = 0; x < gridWidth; x++) {
+          const idx = (y * gridWidth + x) * 4;
+          const pixelColor: RGBColor = {
+            r: data[idx],
+            g: data[idx + 1],
+            b: data[idx + 2],
+          };
+          
+          const closestDMC = findClosestDMC(pixelColor);
+          
+          grid[y][x] = {
+            x,
+            y,
+            color: closestDMC,
+            symbol: closestDMC.symbol || '?',
+          };
+        }
+      }
+      
+      // Yield more frequently on mobile
+      await yieldToBrowser();
+      if (isMobile && (startY / chunkSize) % 2 === 0) {
+        await yieldToBrowser(); // Extra yield every other chunk on mobile
+      }
+    }
+    
+    return grid;
+  }
+  
+  // Original area averaging approach for non-resized images
   const scaleX = imageData.width / gridWidth;
   const scaleY = imageData.height / gridHeight;
-  
-  // Pre-build color lookup table for faster matching
-  // Create a simple hash-based lookup for common colors
   const colorLookup = new Map<string, DMCThread>();
   
-  // Fast color matching function using pre-computed palette
   const findClosestDMC = (color: RGBColor): DMCThread => {
-    // Check cache first
     const cacheKey = `${color.r},${color.g},${color.b}`;
     if (colorLookup.has(cacheKey)) {
       return colorLookup.get(cacheKey)!;
     }
     
-    // Find closest using squared distance (faster than sqrt)
     let minDistanceSq = Infinity;
     let closestDMC = dmcPalette[0];
     
@@ -111,7 +186,6 @@ async function mapImageToGridChunked(
       }
     }
     
-    // Cache the result
     colorLookup.set(cacheKey, closestDMC);
     return closestDMC;
   };
@@ -119,7 +193,6 @@ async function mapImageToGridChunked(
   for (let startY = 0; startY < gridHeight; startY += chunkSize) {
     const endY = Math.min(startY + chunkSize, gridHeight);
     
-    // Process chunk
     for (let y = startY; y < endY; y++) {
       grid[y] = [];
       
@@ -129,7 +202,6 @@ async function mapImageToGridChunked(
         const srcWidth = Math.ceil(scaleX);
         const srcHeight = Math.ceil(scaleY);
         
-        // Average pixels in area
         const data = imageData.data;
         let r = 0, g = 0, b = 0, count = 0;
         
@@ -149,7 +221,6 @@ async function mapImageToGridChunked(
           b: Math.round(b / count),
         };
         
-        // Find closest DMC color using optimized function
         const closestDMC = findClosestDMC(avgColor);
         
         grid[y][x] = {
@@ -161,8 +232,10 @@ async function mapImageToGridChunked(
       }
     }
     
-    // Yield to browser between chunks
     await yieldToBrowser();
+    if (isMobile && (startY / chunkSize) % 2 === 0) {
+      await yieldToBrowser(); // Extra yield every other chunk on mobile
+    }
   }
   
   return grid;

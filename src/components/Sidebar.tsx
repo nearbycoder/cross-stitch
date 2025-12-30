@@ -6,6 +6,7 @@ import { Slider } from './ui/slider';
 import { Checkbox } from './ui/checkbox';
 import { Sparkles, Loader2, X, Upload } from 'lucide-react';
 import { ImageUploader } from './ImageUploader';
+import { useState, useEffect } from 'react';
 
 interface SidebarProps {
   onClose?: () => void;
@@ -13,13 +14,29 @@ interface SidebarProps {
 
 export function Sidebar({ onClose }: SidebarProps) {
   const { settings, updateSettings, generatePattern, isProcessing, originalImage, pattern, reset } = usePatternStore();
+  const [gridWidthInput, setGridWidthInput] = useState<string>(settings.gridWidth.toString());
+  const [gridHeightInput, setGridHeightInput] = useState<string>(settings.gridHeight.toString());
 
-  const handleGridWidthChange = (value: number) => {
-    updateSettings({ gridWidth: value });
+  // Sync local state with settings when settings change externally
+  useEffect(() => {
+    setGridWidthInput(settings.gridWidth.toString());
+    setGridHeightInput(settings.gridHeight.toString());
+  }, [settings.gridWidth, settings.gridHeight]);
+
+  const handleGridWidthChange = (value: string) => {
+    setGridWidthInput(value);
+    const numValue = parseInt(value);
+    if (!isNaN(numValue) && numValue >= 10 && numValue <= 500) {
+      updateSettings({ gridWidth: numValue });
+    }
   };
 
-  const handleGridHeightChange = (value: number) => {
-    updateSettings({ gridHeight: value });
+  const handleGridHeightChange = (value: string) => {
+    setGridHeightInput(value);
+    const numValue = parseInt(value);
+    if (!isNaN(numValue) && numValue >= 10 && numValue <= 500) {
+      updateSettings({ gridHeight: numValue });
+    }
   };
 
   return (
@@ -138,11 +155,15 @@ export function Sidebar({ onClose }: SidebarProps) {
                   type="number"
                   min="10"
                   max="500"
-                  value={settings.gridWidth}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value) || 10;
-                    handleGridWidthChange(value);
+                  value={gridWidthInput}
+                  onChange={(e) => handleGridWidthChange(e.target.value)}
+                  onBlur={(e) => {
+                    const numValue = parseInt(e.target.value);
+                    if (isNaN(numValue) || numValue < 10 || numValue > 500) {
+                      setGridWidthInput(settings.gridWidth.toString());
+                    }
                   }}
+                  placeholder="100"
                   disabled={isProcessing}
                   className="w-full border-2 focus:border-primary transition-colors"
                 />
@@ -155,11 +176,15 @@ export function Sidebar({ onClose }: SidebarProps) {
                   type="number"
                   min="10"
                   max="500"
-                  value={settings.gridHeight}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value) || 10;
-                    handleGridHeightChange(value);
+                  value={gridHeightInput}
+                  onChange={(e) => handleGridHeightChange(e.target.value)}
+                  onBlur={(e) => {
+                    const numValue = parseInt(e.target.value);
+                    if (isNaN(numValue) || numValue < 10 || numValue > 500) {
+                      setGridHeightInput(settings.gridHeight.toString());
+                    }
                   }}
+                  placeholder="100"
                   disabled={isProcessing}
                   className="w-full border-2 focus:border-primary transition-colors"
                 />
