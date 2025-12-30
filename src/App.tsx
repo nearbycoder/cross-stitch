@@ -1,11 +1,66 @@
-import { useEffect, useState } from 'react';
-import { usePatternStore } from './store/patternStore';
+import { useEffect, useState, useRef } from 'react';
+import { usePatternStore, setCurrentProjectStorageKey } from './store/patternStore';
+import { useProjectStore, getProjectStorageKey } from './store/projectStore';
 import { Sidebar } from './components/Sidebar';
 import { PatternPreview } from './components/PatternPreview';
 import { ColorLegend } from './components/ColorLegend';
 import { ResizableSplitPane } from './components/ResizableSplitPane';
 import { Menu, X } from 'lucide-react';
 import { Button } from './components/ui/button';
+
+// Migration function to convert old single-project data to new format
+function migrateOldData() {
+  const OLD_STORAGE_KEY = 'cross-stitch-pattern-storage';
+  const oldData = localStorage.getItem(OLD_STORAGE_KEY);
+
+  // Check if we already have projects
+  const projectsData = localStorage.getItem('cross-stitch-projects');
+  if (projectsData) {
+    const parsed = JSON.parse(projectsData);
+    if (parsed.state?.projects?.length > 0) {
+      // Already have projects, no migration needed
+      return parsed.state.currentProjectId;
+    }
+  }
+
+  // If there's old data, migrate it
+  if (oldData) {
+    try {
+      const parsed = JSON.parse(oldData);
+      if (parsed.state?.originalImageDataUrl || parsed.state?.settings) {
+        // Create a new project for the old data
+        const projectId = `project_${Date.now()}_migrated`;
+        const newProject = {
+          id: projectId,
+          name: 'My Pattern',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        // Save project to project store
+        const projectsState = {
+          state: {
+            projects: [newProject],
+            currentProjectId: projectId,
+          },
+        };
+        localStorage.setItem('cross-stitch-projects', JSON.stringify(projectsState));
+
+        // Copy old data to new project-specific storage
+        localStorage.setItem(getProjectStorageKey(projectId), oldData);
+
+        // Clean up old storage key
+        localStorage.removeItem(OLD_STORAGE_KEY);
+
+        return projectId;
+      }
+    } catch (e) {
+      // Ignore parsing errors
+    }
+  }
+
+  return null;
+}
 
 function App() {
   const {
@@ -16,8 +71,41 @@ function App() {
     generatePattern,
     pattern,
     _hasHydrated,
+    loadProject,
   } = usePatternStore();
+  const { currentProjectId, projects, createProject } = useProjectStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const initializedRef = useRef(false);
+
+  // Initialize project system on first load
+  useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
+    // Try to migrate old data first
+    const migratedProjectId = migrateOldData();
+
+    // If migration created a project, use that
+    if (migratedProjectId) {
+      setCurrentProjectStorageKey(migratedProjectId);
+      loadProject(migratedProjectId);
+      return;
+    }
+
+    // If we have a current project, load it
+    if (currentProjectId) {
+      setCurrentProjectStorageKey(currentProjectId);
+      loadProject(currentProjectId);
+      return;
+    }
+
+    // If we have no projects at all, create the first one
+    if (projects.length === 0) {
+      const newId = createProject('My First Pattern');
+      setCurrentProjectStorageKey(newId);
+      loadProject(newId);
+    }
+  }, []);
 
   // Restore image from localStorage after hydration
   useEffect(() => {

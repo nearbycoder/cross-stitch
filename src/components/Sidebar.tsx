@@ -6,6 +6,7 @@ import { Slider } from './ui/slider';
 import { Checkbox } from './ui/checkbox';
 import { Sparkles, Loader2, X, Upload } from 'lucide-react';
 import { ImageUploader } from './ImageUploader';
+import { ProjectSelector } from './ProjectSelector';
 import { useState, useEffect } from 'react';
 
 interface SidebarProps {
@@ -47,20 +48,20 @@ export function Sidebar({ onClose }: SidebarProps) {
         opacity: 1,
       }}
     >
-      <div 
-        className="flex-shrink-0 p-4 sm:p-5 border-b border-border/50 bg-gradient-to-r from-background to-muted/20" 
-        style={{ 
+      <div
+        className="flex-shrink-0 p-4 sm:p-5 border-b border-border/50 bg-gradient-to-r from-background to-muted/20"
+        style={{
           backgroundColor: 'hsl(var(--background))',
           opacity: 1,
         }}
       >
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2.5">
             <div className="p-1.5 rounded-lg bg-primary/10">
               <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-semibold tracking-tight">Pattern Settings</h2>
+              <h2 className="text-base sm:text-lg font-semibold tracking-tight">Cross Stitch</h2>
               {originalImage && (
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {pattern ? `${pattern.width} × ${pattern.height}` : 'Ready'}
@@ -97,6 +98,7 @@ export function Sidebar({ onClose }: SidebarProps) {
             )}
           </div>
         </div>
+        <ProjectSelector />
       </div>
 
       <div 
