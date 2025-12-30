@@ -8,6 +8,31 @@ import { quantizeColors, getOptimalSampleRate, applyQuantizedColors } from '../c
 import { matchColorsToDMC } from '../core/colorMatching/colorMatcher';
 import { assignSymbolsToPalette } from '../core/patternGeneration/symbolAssigner';
 import { resizeToGrid } from '../core/imageProcessing/gridMapper';
+import { getProjectStorageKey, useProjectStore } from './projectStore';
+
+// Current project ID reference - updated by the app when switching projects
+let currentProjectStorageKey = 'cross-stitch-pattern-storage';
+let currentProjectId: string | null = null;
+
+export function setCurrentProjectStorageKey(projectId: string | null): void {
+  currentProjectId = projectId;
+  if (projectId) {
+    currentProjectStorageKey = getProjectStorageKey(projectId);
+  } else {
+    currentProjectStorageKey = 'cross-stitch-pattern-storage';
+  }
+}
+
+export function getCurrentProjectStorageKey(): string {
+  return currentProjectStorageKey;
+}
+
+// Helper to update the project timestamp
+function updateCurrentProjectTimestamp(): void {
+  if (currentProjectId) {
+    useProjectStore.getState().updateProjectTimestamp(currentProjectId);
+  }
+}
 
 interface PatternStore {
   // State
@@ -22,6 +47,7 @@ interface PatternStore {
   isProcessing: boolean;
   error: string | null;
   _hasHydrated: boolean; // Track hydration state
+  _currentProjectId: string | null; // Track which project is loaded
 
   // Actions
   loadImage: (file: File) => Promise<void>;
@@ -33,6 +59,8 @@ interface PatternStore {
   reset: () => void;
   setError: (error: string | null) => void;
   setHasHydrated: (state: boolean) => void;
+  loadProject: (projectId: string | null) => void;
+  saveToCurrentProject: () => void;
 }
 
 const DEFAULT_SETTINGS: ProcessingSettings = {
@@ -254,6 +282,20 @@ async function mapImageToGridChunked(
   return grid;
 }
 
+// Custom storage adapter that uses dynamic key based on current project
+const projectStorageAdapter = {
+  getItem: (_name: string): string | null => {
+    // The 'name' parameter is ignored; we use the current project storage key
+    return localStorage.getItem(currentProjectStorageKey);
+  },
+  setItem: (_name: string, value: string): void => {
+    localStorage.setItem(currentProjectStorageKey, value);
+  },
+  removeItem: (_name: string): void => {
+    localStorage.removeItem(currentProjectStorageKey);
+  },
+};
+
 export const usePatternStore = create<PatternStore>()(
   persist(
     (set, get) => ({
@@ -269,6 +311,7 @@ export const usePatternStore = create<PatternStore>()(
       isProcessing: false,
       error: null,
       _hasHydrated: false,
+      _currentProjectId: null,
 
       // Set hydration state
       setHasHydrated: (state: boolean) => {
@@ -291,6 +334,9 @@ export const usePatternStore = create<PatternStore>()(
             pattern: null,
             isProcessing: false,
           });
+
+          // Update project timestamp
+          updateCurrentProjectTimestamp();
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Failed to load image';
           set({ error: errorMessage, isProcessing: false });
@@ -401,6 +447,9 @@ export const usePatternStore = create<PatternStore>()(
             pattern,
             isProcessing: false,
           });
+
+          // Update project timestamp
+          updateCurrentProjectTimestamp();
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Failed to generate pattern';
           set({ error: errorMessage, isProcessing: false });
@@ -529,10 +578,113 @@ export const usePatternStore = create<PatternStore>()(
       setError: (error: string | null) => {
         set({ error });
       },
+
+      // Load a specific project's data from localStorage
+      loadProject: (projectId: string | null) => {
+        // Save current project first
+        get().saveToCurrentProject();
+
+        // Update the storage key for the new project
+        setCurrentProjectStorageKey(projectId);
+
+        // Try to load the project data
+        if (projectId) {
+          const storageKey = getProjectStorageKey(projectId);
+          const savedData = localStorage.getItem(storageKey);
+
+          if (savedData) {
+            try {
+              const parsed = JSON.parse(savedData);
+              const state = parsed.state || {};
+
+              set({
+                originalImage: null, // Will be reloaded from dataUrl
+                originalFile: null,
+                originalImageDataUrl: state.originalImageDataUrl || null,
+                processedImage: null,
+                quantizedColors: [],
+                settings: state.settings || DEFAULT_SETTINGS,
+                dmcPalette: state.dmcPalette || [],
+                pattern: null,
+                error: null,
+                _hasHydrated: false,
+                _currentProjectId: projectId,
+              });
+
+              // Trigger hydration for the new project
+              set({ _hasHydrated: true });
+            } catch (e) {
+              // If parsing fails, start fresh
+              set({
+                originalImage: null,
+                originalFile: null,
+                originalImageDataUrl: null,
+                processedImage: null,
+                quantizedColors: [],
+                settings: DEFAULT_SETTINGS,
+                dmcPalette: [],
+                pattern: null,
+                error: null,
+                _hasHydrated: true,
+                _currentProjectId: projectId,
+              });
+            }
+          } else {
+            // No saved data for this project, start fresh
+            set({
+              originalImage: null,
+              originalFile: null,
+              originalImageDataUrl: null,
+              processedImage: null,
+              quantizedColors: [],
+              settings: DEFAULT_SETTINGS,
+              dmcPalette: [],
+              pattern: null,
+              error: null,
+              _hasHydrated: true,
+              _currentProjectId: projectId,
+            });
+          }
+        } else {
+          // No project selected
+          set({
+            originalImage: null,
+            originalFile: null,
+            originalImageDataUrl: null,
+            processedImage: null,
+            quantizedColors: [],
+            settings: DEFAULT_SETTINGS,
+            dmcPalette: [],
+            pattern: null,
+            error: null,
+            _hasHydrated: true,
+            _currentProjectId: null,
+          });
+        }
+      },
+
+      // Manually save current state to the current project's storage
+      saveToCurrentProject: () => {
+        const state = get();
+        if (!state._currentProjectId) return;
+
+        const dataToSave = {
+          state: {
+            settings: state.settings,
+            originalImageDataUrl: state.originalImageDataUrl,
+            dmcPalette: state.dmcPalette,
+          },
+        };
+
+        localStorage.setItem(
+          getProjectStorageKey(state._currentProjectId),
+          JSON.stringify(dataToSave)
+        );
+      },
     }),
     {
       name: 'cross-stitch-pattern-storage',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => projectStorageAdapter),
       partialize: (state) => ({
         // Only persist essential data - NOT the full pattern cells array (too large)
         settings: state.settings,
@@ -544,7 +696,7 @@ export const usePatternStore = create<PatternStore>()(
         if (error) {
           return;
         }
-        
+
         if (!state) return;
 
         // Mark as hydrated
