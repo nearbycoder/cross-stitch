@@ -2,6 +2,8 @@
 
 A web application that converts images to cross stitch patterns with DMC thread color matching.
 
+![Cross Stitch Pattern Converter Screenshot](./docs/screenshot.png)
+
 ## Features
 
 - **Image Upload**: Upload images via drag-and-drop or file selection
