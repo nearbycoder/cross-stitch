@@ -31,7 +31,7 @@ function getTextColor(backgroundColor: string): string {
 export function PatternPreview() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { pattern } = usePatternStore();
+  const { pattern, settings } = usePatternStore();
   const [zoom, setZoom] = useState(1);
   const [panX, setPanX] = useState(0);
   const [panY, setPanY] = useState(0);
@@ -132,22 +132,34 @@ export function PatternPreview() {
     canvas.width = width;
     canvas.height = height;
 
-    // Clear canvas with a dark background
-    ctx.fillStyle = '#1a1a1a';
+    // Clear canvas with appropriate background
+    if (settings.colorlessMode) {
+      ctx.fillStyle = '#ffffff';
+    } else {
+      ctx.fillStyle = '#1a1a1a';
+    }
     ctx.fillRect(0, 0, width, height);
 
-    // Draw cells with colors
+    // Draw cells with colors (or white in colorless mode)
     for (let y = 0; y < pattern.height; y++) {
       for (let x = 0; x < pattern.width; x++) {
         const cell = pattern.cells[y][x];
-        ctx.fillStyle = cell.color.hex;
+        if (settings.colorlessMode) {
+          ctx.fillStyle = '#ffffff';
+        } else {
+          ctx.fillStyle = cell.color.hex;
+        }
         ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
       }
     }
 
     // Draw grid lines (always show, but thinner when zoomed out)
     const gridOpacity = Math.min(1, zoom * 0.3);
-    ctx.strokeStyle = `rgba(255, 255, 255, ${0.15 * gridOpacity})`;
+    if (settings.colorlessMode) {
+      ctx.strokeStyle = `rgba(0, 0, 0, ${0.2 * gridOpacity})`;
+    } else {
+      ctx.strokeStyle = `rgba(255, 255, 255, ${0.15 * gridOpacity})`;
+    }
     ctx.lineWidth = 0.5 / zoom;
 
     for (let x = 0; x <= pattern.width; x++) {
@@ -173,8 +185,12 @@ export function PatternPreview() {
     for (let y = 0; y < pattern.height; y++) {
       for (let x = 0; x < pattern.width; x++) {
         const cell = pattern.cells[y][x];
-        // Use adaptive text color based on cell background
-        ctx.fillStyle = getTextColor(cell.color.hex);
+        // Use adaptive text color based on cell background (or black in colorless mode)
+        if (settings.colorlessMode) {
+          ctx.fillStyle = '#000000';
+        } else {
+          ctx.fillStyle = getTextColor(cell.color.hex);
+        }
         ctx.fillText(
           cell.symbol,
           x * cellSize + cellSize / 2,
@@ -182,7 +198,7 @@ export function PatternPreview() {
         );
       }
     }
-  }, [pattern, zoom]);
+  }, [pattern, zoom, settings.colorlessMode]);
 
   // Attach wheel event listener
   useEffect(() => {

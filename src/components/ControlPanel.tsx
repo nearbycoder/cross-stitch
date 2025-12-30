@@ -103,21 +103,39 @@ export function ControlPanel() {
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="maintainAspectRatio"
-            checked={settings.maintainAspectRatio}
-            onCheckedChange={(checked) =>
-              updateSettings({ maintainAspectRatio: !!checked })
-            }
-            disabled={isProcessing}
-          />
-          <Label
-            htmlFor="maintainAspectRatio"
-            className="text-sm sm:text-base font-normal cursor-pointer"
-          >
-            Maintain aspect ratio
-          </Label>
+        <div className="space-y-3">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="maintainAspectRatio"
+              checked={settings.maintainAspectRatio}
+              onCheckedChange={(checked: boolean) =>
+                updateSettings({ maintainAspectRatio: !!checked })
+              }
+              disabled={isProcessing}
+            />
+            <Label
+              htmlFor="maintainAspectRatio"
+              className="text-sm sm:text-base font-normal cursor-pointer"
+            >
+              Maintain aspect ratio
+            </Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="colorlessMode"
+              checked={settings.colorlessMode}
+              onCheckedChange={(checked: boolean) =>
+                updateSettings({ colorlessMode: !!checked })
+              }
+              disabled={isProcessing}
+            />
+            <Label
+              htmlFor="colorlessMode"
+              className="text-sm sm:text-base font-normal cursor-pointer"
+            >
+              Colorless mode
+            </Label>
+          </div>
         </div>
 
         <Button

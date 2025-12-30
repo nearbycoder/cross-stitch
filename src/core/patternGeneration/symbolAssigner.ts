@@ -1,5 +1,5 @@
 import type { DMCThread } from '../../types/dmc';
-import { getAllSymbols, getSymbolCount } from '../../data/symbols';
+import { getAllSymbols } from '../../data/symbols';
 
 /**
  * Assign unique symbols to DMC colors in a palette
@@ -9,7 +9,6 @@ import { getAllSymbols, getSymbolCount } from '../../data/symbols';
  */
 export function assignSymbolsToPalette(palette: DMCThread[]): DMCThread[] {
   const symbols = getAllSymbols();
-  const maxSymbols = getSymbolCount();
 
   // If palette has more colors than symbols, symbols will be reused
 

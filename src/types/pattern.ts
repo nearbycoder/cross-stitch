@@ -27,6 +27,7 @@ export interface ProcessingSettings {
   gridWidth: number;
   gridHeight: number;
   maintainAspectRatio: boolean;
+  colorlessMode: boolean;
 }
 
 export interface RenderOptions {

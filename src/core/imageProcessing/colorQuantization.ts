@@ -1,5 +1,4 @@
 import type { RGBColor } from '../../types/color';
-import { euclideanDistance } from '../colorMatching/colorDistance';
 
 /**
  * Extract RGB colors from ImageData
@@ -21,169 +20,6 @@ export function extractPixels(imageData: ImageData, sampleRate: number = 1): RGB
 }
 
 /**
- * Initialize k centroids using k-means++ algorithm (async version with yielding)
- * This provides better initial centroids than random selection
- */
-async function initializeCentroidsKMeansPlusPlus(pixels: RGBColor[], k: number): Promise<RGBColor[]> {
-  if (pixels.length === 0) {
-    throw new Error('Cannot initialize centroids from empty pixel array');
-  }
-
-  if (k <= 0) {
-    throw new Error('k must be greater than 0');
-  }
-
-  const centroids: RGBColor[] = [];
-
-  // 1. Choose first centroid randomly
-  const firstIndex = Math.floor(Math.random() * pixels.length);
-  centroids.push({ ...pixels[firstIndex] });
-
-  // 2. Choose remaining centroids with chunking for large pixel arrays
-  const chunkSize = 10000; // Process 10k pixels at a time
-  
-  for (let i = 1; i < k; i++) {
-    // Calculate distance from each pixel to nearest existing centroid (chunked)
-    const distances: number[] = new Array(pixels.length);
-    
-    for (let chunkStart = 0; chunkStart < pixels.length; chunkStart += chunkSize) {
-      const chunkEnd = Math.min(chunkStart + chunkSize, pixels.length);
-      
-      for (let j = chunkStart; j < chunkEnd; j++) {
-        const pixel = pixels[j];
-        let minDist = Infinity;
-        for (const c of centroids) {
-          const dist = euclideanDistance(pixel, c);
-          if (dist < minDist) {
-            minDist = dist;
-          }
-        }
-        distances[j] = minDist;
-      }
-      
-      // Yield between chunks
-      await yieldToBrowser();
-    }
-
-    // Calculate total distance squared
-    const totalDistanceSquared = distances.reduce((sum, d) => sum + d * d, 0);
-
-    // Choose next centroid with probability proportional to distance²
-    let random = Math.random() * totalDistanceSquared;
-
-    for (let j = 0; j < pixels.length; j++) {
-      random -= distances[j] * distances[j];
-      if (random <= 0) {
-        centroids.push({ ...pixels[j] });
-        break;
-      }
-    }
-
-    // Fallback: if we didn't select a centroid, pick randomly
-    if (centroids.length !== i + 1) {
-      const randomIndex = Math.floor(Math.random() * pixels.length);
-      centroids.push({ ...pixels[randomIndex] });
-    }
-    
-    // Yield after each centroid selection
-    await yieldToBrowser();
-  }
-
-  return centroids;
-}
-
-/**
- * Assign each pixel to the nearest centroid
- * Returns array of cluster assignments (pixel index -> cluster index)
- */
-function assignPixelsToClusters(pixels: RGBColor[], centroids: RGBColor[]): number[] {
-  return pixels.map(pixel => {
-    let minDistance = Infinity;
-    let closestCluster = 0;
-
-    for (let i = 0; i < centroids.length; i++) {
-      const distance = euclideanDistance(pixel, centroids[i]);
-      if (distance < minDistance) {
-        minDistance = distance;
-        closestCluster = i;
-      }
-    }
-
-    return closestCluster;
-  });
-}
-
-/**
- * Recalculate centroids as the mean of all pixels in each cluster
- * Optimized to avoid slow filter operations
- */
-function recalculateCentroids(
-  pixels: RGBColor[],
-  assignments: number[],
-  k: number
-): RGBColor[] {
-  const newCentroids: RGBColor[] = [];
-  
-  // Pre-allocate arrays for each cluster
-  const clusterSums: Array<{ r: number; g: number; b: number; count: number }> = [];
-  for (let i = 0; i < k; i++) {
-    clusterSums[i] = { r: 0, g: 0, b: 0, count: 0 };
-  }
-  
-  // Accumulate sums in a single pass (much faster than filter)
-  for (let i = 0; i < pixels.length; i++) {
-    const clusterIndex = assignments[i];
-    const pixel = pixels[i];
-    const sum = clusterSums[clusterIndex];
-    sum.r += pixel.r;
-    sum.g += pixel.g;
-    sum.b += pixel.b;
-    sum.count++;
-  }
-  
-  // Calculate means
-  for (let i = 0; i < k; i++) {
-    const sum = clusterSums[i];
-    
-    if (sum.count === 0) {
-      // If cluster is empty, pick a random pixel
-      const randomPixel = pixels[Math.floor(Math.random() * pixels.length)];
-      newCentroids.push({ ...randomPixel });
-    } else {
-      newCentroids.push({
-        r: Math.round(sum.r / sum.count),
-        g: Math.round(sum.g / sum.count),
-        b: Math.round(sum.b / sum.count),
-      });
-    }
-  }
-
-  return newCentroids;
-}
-
-/**
- * Check if centroids have converged (changed very little)
- */
-function centroidsConverged(
-  oldCentroids: RGBColor[],
-  newCentroids: RGBColor[],
-  threshold: number = 1
-): boolean {
-  if (oldCentroids.length !== newCentroids.length) {
-    return false;
-  }
-
-  for (let i = 0; i < oldCentroids.length; i++) {
-    const distance = euclideanDistance(oldCentroids[i], newCentroids[i]);
-    if (distance > threshold) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-/**
  * Yield to browser to prevent UI freezing
  */
 async function yieldToBrowser(): Promise<void> {
@@ -195,42 +31,6 @@ async function yieldToBrowser(): Promise<void> {
       setTimeout(() => resolve(), 0);
     });
   });
-}
-
-/**
- * Assign pixels to clusters with chunking for better performance
- */
-async function assignPixelsToClustersChunked(
-  pixels: RGBColor[],
-  centroids: RGBColor[],
-  chunkSize: number = 1000
-): Promise<number[]> {
-  const assignments: number[] = new Array(pixels.length);
-  
-  for (let i = 0; i < pixels.length; i += chunkSize) {
-    const end = Math.min(i + chunkSize, pixels.length);
-    
-    for (let j = i; j < end; j++) {
-      const pixel = pixels[j];
-      let minDistance = Infinity;
-      let closestCluster = 0;
-
-      for (let k = 0; k < centroids.length; k++) {
-        const distance = euclideanDistance(pixel, centroids[k]);
-        if (distance < minDistance) {
-          minDistance = distance;
-          closestCluster = k;
-        }
-      }
-
-      assignments[j] = closestCluster;
-    }
-    
-    // Yield every chunk to prevent blocking (always yield, not just if more chunks remain)
-    await yieldToBrowser();
-  }
-  
-  return assignments;
 }
 
 /**
@@ -327,7 +127,6 @@ async function quantizeColorsMedianCut(
 
     // Split at median
     const median = Math.floor(box.pixels.length / 2);
-    const medianValue = box.pixels[median].color[splitChannel];
 
     const leftPixels = box.pixels.slice(0, median);
     const rightPixels = box.pixels.slice(median);
@@ -409,7 +208,7 @@ async function quantizeColorsMedianCut(
 export async function quantizeColors(
   imageData: ImageData,
   k: number,
-  maxIterations: number = 10,
+  _maxIterations: number = 10,
   sampleRate: number = 1
 ): Promise<RGBColor[]> {
   // Validate inputs

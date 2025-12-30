@@ -7,7 +7,7 @@ import { loadImageFile, loadImageFromURL } from '../core/imageProcessing/imageLo
 import { quantizeColors, getOptimalSampleRate, applyQuantizedColors } from '../core/imageProcessing/colorQuantization';
 import { matchColorsToDMC } from '../core/colorMatching/colorMatcher';
 import { assignSymbolsToPalette } from '../core/patternGeneration/symbolAssigner';
-import { mapImageToGrid, resizeToGrid } from '../core/imageProcessing/gridMapper';
+import { resizeToGrid } from '../core/imageProcessing/gridMapper';
 
 interface PatternStore {
   // State
@@ -40,6 +40,7 @@ const DEFAULT_SETTINGS: ProcessingSettings = {
   gridWidth: 100,
   gridHeight: 100,
   maintainAspectRatio: true,
+  colorlessMode: false,
 };
 
 // Helper to convert ImageData to data URL with compression
@@ -85,9 +86,6 @@ async function mapImageToGridChunked(
   // Pre-build color lookup table for faster matching
   // Create a simple hash-based lookup for common colors
   const colorLookup = new Map<string, DMCThread>();
-  
-  // Pre-compute distances for palette colors (for faster matching)
-  const paletteRGBs = dmcPalette.map((dmc) => dmc.rgb);
   
   // Fast color matching function using pre-computed palette
   const findClosestDMC = (color: RGBColor): DMCThread => {

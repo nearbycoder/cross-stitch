@@ -10,7 +10,7 @@ import { ImageUploader } from './ImageUploader';
 
 export function Sidebar() {
   const { settings, updateSettings, generatePattern, isProcessing, originalImage, pattern, _hasHydrated, reset } = usePatternStore();
-  const regenerateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const regenerateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isInitialMountRef = useRef(true);
 
   // Skip auto-regeneration on initial mount (when restoring from localStorage)
@@ -164,19 +164,35 @@ export function Sidebar() {
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="maintainAspectRatio"
-                checked={settings.maintainAspectRatio}
-                onCheckedChange={(checked) => updateSettings({ maintainAspectRatio: !!checked })}
-                disabled={isProcessing}
-              />
-              <Label
-                htmlFor="maintainAspectRatio"
-                className="text-sm font-normal cursor-pointer"
-              >
-                Maintain aspect ratio
-              </Label>
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="maintainAspectRatio"
+                  checked={settings.maintainAspectRatio}
+                  onCheckedChange={(checked: boolean) => updateSettings({ maintainAspectRatio: !!checked })}
+                  disabled={isProcessing}
+                />
+                <Label
+                  htmlFor="maintainAspectRatio"
+                  className="text-sm font-normal cursor-pointer"
+                >
+                  Maintain aspect ratio
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="colorlessMode"
+                  checked={settings.colorlessMode}
+                  onCheckedChange={(checked: boolean) => updateSettings({ colorlessMode: !!checked })}
+                  disabled={isProcessing}
+                />
+                <Label
+                  htmlFor="colorlessMode"
+                  className="text-sm font-normal cursor-pointer"
+                >
+                  Colorless mode
+                </Label>
+              </div>
             </div>
 
             <div className="space-y-2">
