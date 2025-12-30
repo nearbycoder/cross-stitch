@@ -306,55 +306,57 @@ export function PatternPreview() {
 
   return (
     <div className="h-full flex flex-col bg-muted/30">
-      <div className="border-b border-border">
-        <div className="flex items-center justify-between p-2 sm:p-2 gap-2">
+      <div className="border-b border-border/50 bg-gradient-to-r from-background to-muted/20">
+        <div className="flex items-center justify-between p-3 sm:p-4 gap-3">
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <Palette className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
-              <h3 className="text-base sm:text-lg font-semibold truncate">Pattern Preview</h3>
+            <div className="flex items-center gap-2.5 mb-1.5">
+              <div className="p-1.5 rounded-lg bg-primary/10">
+                <Palette className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+              </div>
+              <h3 className="text-base sm:text-lg font-semibold truncate tracking-tight">Pattern Preview</h3>
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground truncate">
+            <p className="text-xs sm:text-sm text-muted-foreground truncate ml-8 sm:ml-9">
               {pattern.width} × {pattern.height} stitches •{' '}
               {pattern.palette.length} colors
             </p>
           </div>
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 bg-muted/30 p-1 rounded-lg border border-border/50">
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={zoomOut}
               disabled={zoom <= 0.1}
-              className="h-8 w-8 sm:h-9 sm:w-auto sm:px-3"
+              className="h-8 w-8 sm:h-9 sm:w-auto sm:px-3 hover:bg-background transition-all"
             >
               <ZoomOut className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
-            <span className="text-xs sm:text-sm text-muted-foreground min-w-10 sm:min-w-12 text-center">
+            <span className="text-xs sm:text-sm text-muted-foreground min-w-10 sm:min-w-12 text-center font-medium px-1">
               {Math.round(zoom * 100)}%
             </span>
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={zoomIn}
               disabled={zoom >= 10}
-              className="h-8 w-8 sm:h-9 sm:w-auto sm:px-3"
+              className="h-8 w-8 sm:h-9 sm:w-auto sm:px-3 hover:bg-background transition-all"
             >
               <ZoomIn className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
             <Button 
-              variant="outline" 
+              variant="ghost" 
               size="sm" 
               onClick={resetView}
-              className="h-8 w-8 sm:h-9 sm:w-auto sm:px-3"
+              className="h-8 w-8 sm:h-9 sm:w-auto sm:px-3 hover:bg-background transition-all"
             >
               <Maximize2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
           </div>
         </div>
       </div>
-      <div className="flex-1 min-h-0 flex flex-col p-4">
+      <div className="flex-1 min-h-0 flex flex-col p-3 sm:p-4">
         <div
           ref={containerRef}
-          className="rounded-lg bg-muted p-2 sm:p-4 overflow-auto flex-1 relative cursor-grab active:cursor-grabbing touch-none"
+          className="rounded-xl bg-muted/50 border border-border/50 shadow-inner p-2 sm:p-4 overflow-auto flex-1 relative cursor-grab active:cursor-grabbing touch-none transition-shadow duration-200 hover:shadow-lg"
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
           style={{ cursor: isDragging ? 'grabbing' : 'grab' }}

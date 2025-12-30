@@ -68,20 +68,44 @@ export function Sidebar({ onClose }: SidebarProps) {
   };
 
   return (
-    <aside className="w-full h-full border-r border-border bg-background flex flex-col overflow-hidden shadow-lg md:shadow-none">
-      <div className="flex-shrink-0 p-3 sm:p-4 border-b border-border">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <h2 className="text-base sm:text-lg font-semibold">Pattern Settings</h2>
+    <aside 
+      className="w-full h-full border-r border-border/50 flex flex-col overflow-hidden shadow-xl md:shadow-lg" 
+      style={{ 
+        backgroundColor: 'hsl(var(--background))',
+        opacity: 1,
+      }}
+    >
+      <div 
+        className="flex-shrink-0 p-4 sm:p-5 border-b border-border/50 bg-gradient-to-r from-background to-muted/20" 
+        style={{ 
+          backgroundColor: 'hsl(var(--background))',
+          opacity: 1,
+        }}
+      >
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 rounded-lg bg-primary/10">
+              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-base sm:text-lg font-semibold tracking-tight">Pattern Settings</h2>
+              {originalImage && (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {pattern ? `${pattern.width} × ${pattern.height}` : 'Ready'}
+                </p>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-1">
             {onClose && (
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={onClose}
-                className="h-8 w-8 md:hidden"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClose();
+                }}
+                className="h-8 w-8 md:hidden hover:bg-destructive/10 hover:text-destructive transition-colors"
                 title="Close sidebar"
               >
                 <X className="h-4 w-4" />
@@ -93,7 +117,7 @@ export function Sidebar({ onClose }: SidebarProps) {
                 size="icon"
                 onClick={reset}
                 disabled={isProcessing}
-                className="h-8 w-8"
+                className="h-8 w-8 hidden md:flex hover:bg-destructive/10 hover:text-destructive transition-colors"
                 title="Reset and upload new image"
               >
                 <X className="h-4 w-4" />
@@ -103,16 +127,22 @@ export function Sidebar({ onClose }: SidebarProps) {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 p-4 space-y-6 overflow-y-auto">
+      <div 
+        className="flex-1 min-h-0 p-4 sm:p-5 space-y-6 overflow-y-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" 
+        style={{ 
+          backgroundColor: 'hsl(var(--background))',
+          opacity: 1,
+        }}
+      >
         {!originalImage ? (
-          <div className="py-8">
+          <div className="py-8 sm:py-12">
             <ImageUploader />
           </div>
         ) : (
           <>
-            <div className="space-y-2">
+            <div className="space-y-3 p-4 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm">
               <div className="flex items-center justify-between">
-                <Label htmlFor="maxColors" className="text-sm">Max Colors</Label>
+                <Label htmlFor="maxColors" className="text-sm font-medium">Max Colors</Label>
                 <Input
                   id="maxColors-input"
                   type="number"
@@ -126,7 +156,7 @@ export function Sidebar({ onClose }: SidebarProps) {
                     }
                   }}
                   disabled={isProcessing}
-                  className="w-16 h-8 text-center text-sm"
+                  className="w-16 h-9 text-center text-sm font-semibold border-2 focus:border-primary transition-colors"
                 />
               </div>
               <Slider
@@ -139,15 +169,15 @@ export function Sidebar({ onClose }: SidebarProps) {
                 disabled={isProcessing}
                 className="w-full"
               />
-              <div className="flex justify-between text-xs text-muted-foreground px-1">
+              <div className="flex justify-between text-xs text-muted-foreground px-1 font-medium">
                 <span>2</span>
                 <span>50</span>
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 p-4 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm">
               <div className="space-y-2">
-                <Label htmlFor="gridWidth" className="text-sm">Grid Width (stitches)</Label>
+                <Label htmlFor="gridWidth" className="text-sm font-medium">Grid Width (stitches)</Label>
                 <Input
                   id="gridWidth"
                   type="number"
@@ -159,12 +189,12 @@ export function Sidebar({ onClose }: SidebarProps) {
                     handleGridWidthChange(value);
                   }}
                   disabled={isProcessing}
-                  className="w-full"
+                  className="w-full border-2 focus:border-primary transition-colors"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="gridHeight" className="text-sm">Grid Height (stitches)</Label>
+                <Label htmlFor="gridHeight" className="text-sm font-medium">Grid Height (stitches)</Label>
                 <Input
                   id="gridHeight"
                   type="number"
@@ -176,45 +206,47 @@ export function Sidebar({ onClose }: SidebarProps) {
                     handleGridHeightChange(value);
                   }}
                   disabled={isProcessing}
-                  className="w-full"
+                  className="w-full border-2 focus:border-primary transition-colors"
                 />
               </div>
             </div>
 
-            <div className="space-y-3">
-              <div className="flex items-center space-x-2">
+            <div className="space-y-2.5 p-4 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm">
+              <div className="flex items-center space-x-3 group cursor-pointer">
                 <Checkbox
                   id="maintainAspectRatio"
                   checked={settings.maintainAspectRatio}
                   onCheckedChange={(checked: boolean) => updateSettings({ maintainAspectRatio: !!checked })}
                   disabled={isProcessing}
+                  className="group-hover:ring-2 group-hover:ring-primary/20 transition-all"
                 />
                 <Label
                   htmlFor="maintainAspectRatio"
-                  className="text-sm font-normal cursor-pointer"
+                  className="text-sm font-normal cursor-pointer group-hover:text-foreground transition-colors"
                 >
                   Maintain aspect ratio
                 </Label>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-3 group cursor-pointer">
                 <Checkbox
                   id="colorlessMode"
                   checked={settings.colorlessMode}
                   onCheckedChange={(checked: boolean) => updateSettings({ colorlessMode: !!checked })}
                   disabled={isProcessing}
+                  className="group-hover:ring-2 group-hover:ring-primary/20 transition-all"
                 />
                 <Label
                   htmlFor="colorlessMode"
-                  className="text-sm font-normal cursor-pointer"
+                  className="text-sm font-normal cursor-pointer group-hover:text-foreground transition-colors"
                 >
                   Colorless mode
                 </Label>
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               <Button
-                className="w-full"
+                className="w-full h-11 text-base font-semibold shadow-md hover:shadow-lg transition-all duration-200 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
                 onClick={generatePattern}
                 disabled={!originalImage || isProcessing}
                 size="lg"
@@ -238,7 +270,7 @@ export function Sidebar({ onClose }: SidebarProps) {
               </Button>
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full border-2 hover:bg-accent/50 transition-all duration-200"
                 onClick={reset}
                 disabled={isProcessing}
                 size="sm"
