@@ -8,7 +8,11 @@ import { Checkbox } from './ui/checkbox';
 import { Sparkles, Loader2, X, Upload } from 'lucide-react';
 import { ImageUploader } from './ImageUploader';
 
-export function Sidebar() {
+interface SidebarProps {
+  onClose?: () => void;
+}
+
+export function Sidebar({ onClose }: SidebarProps) {
   const { settings, updateSettings, generatePattern, isProcessing, originalImage, pattern, _hasHydrated, reset } = usePatternStore();
   const regenerateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isInitialMountRef = useRef(true);
@@ -64,25 +68,38 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="w-full md:w-64 lg:w-80 border-r border-border bg-background flex flex-col h-full overflow-hidden">
-      <div className="flex-shrink-0 p-4 border-b border-border">
+    <aside className="w-full h-full border-r border-border bg-background flex flex-col overflow-hidden shadow-lg md:shadow-none">
+      <div className="flex-shrink-0 p-3 sm:p-4 border-b border-border">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-semibold">Pattern Settings</h2>
+            <h2 className="text-base sm:text-lg font-semibold">Pattern Settings</h2>
           </div>
-          {originalImage && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={reset}
-              disabled={isProcessing}
-              className="h-8 w-8"
-              title="Reset and upload new image"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
+          <div className="flex items-center gap-1">
+            {onClose && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                className="h-8 w-8 md:hidden"
+                title="Close sidebar"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+            {originalImage && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={reset}
+                disabled={isProcessing}
+                className="h-8 w-8"
+                title="Reset and upload new image"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 

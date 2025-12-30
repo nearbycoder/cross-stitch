@@ -17,6 +17,17 @@ export function ResizableSplitPane({
   const containerRef = useRef<HTMLDivElement>(null);
   const [splitPosition, setSplitPosition] = useState(defaultSplit);
   const [isDragging, setIsDragging] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check if mobile on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Load split position from localStorage on mount, default to 50 if not found
   useEffect(() => {
@@ -80,6 +91,20 @@ export function ResizableSplitPane({
       };
     }
   }, [isDragging, handleMouseMove, handleMouseUp]);
+
+  // On mobile, stack vertically without resizing
+  if (isMobile) {
+    return (
+      <div className="flex flex-col h-full">
+        <div className="flex-1 min-h-0 overflow-hidden">
+          {topChild}
+        </div>
+        <div className="flex-1 min-h-0 overflow-hidden border-t border-border">
+          {bottomChild}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div ref={containerRef} className="flex flex-col h-full relative">

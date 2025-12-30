@@ -37,6 +37,8 @@ export function PatternPreview() {
   const [panY, setPanY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number; distance: number } | null>(null);
+  const [lastTouchDistance, setLastTouchDistance] = useState<number | null>(null);
   const baseCellSize = 20; // Fixed base cell size for consistent rendering
 
   // Handle zoom with mouse wheel
@@ -77,10 +79,37 @@ export function PatternPreview() {
     [panX, panY]
   );
 
+  // Handle touch start
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      if (e.touches.length === 1) {
+        // Single touch - pan
+        const touch = e.touches[0];
+        setIsDragging(true);
+        setDragStart({ x: touch.clientX - panX, y: touch.clientY - panY });
+      } else if (e.touches.length === 2) {
+        // Two touches - pinch to zoom
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        const distance = Math.hypot(
+          touch2.clientX - touch1.clientX,
+          touch2.clientY - touch1.clientY
+        );
+        setTouchStart({
+          x: (touch1.clientX + touch2.clientX) / 2,
+          y: (touch1.clientY + touch2.clientY) / 2,
+          distance,
+        });
+        setLastTouchDistance(distance);
+      }
+    },
+    [panX, panY]
+  );
+
   // Handle mouse move for panning
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (isDragging) {
+      if (isDragging && !touchStart) {
         setPanX(e.clientX - dragStart.x);
         setPanY(e.clientY - dragStart.y);
       }
@@ -90,7 +119,7 @@ export function PatternPreview() {
       setIsDragging(false);
     };
 
-    if (isDragging) {
+    if (isDragging && !touchStart) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
       return () => {
@@ -98,7 +127,60 @@ export function PatternPreview() {
         document.removeEventListener('mouseup', handleMouseUp);
       };
     }
-  }, [isDragging, dragStart]);
+  }, [isDragging, dragStart, touchStart]);
+
+  // Handle touch move
+  useEffect(() => {
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 1 && isDragging && !touchStart) {
+        // Single touch pan
+        const touch = e.touches[0];
+        setPanX(touch.clientX - dragStart.x);
+        setPanY(touch.clientY - dragStart.y);
+      } else if (e.touches.length === 2 && touchStart && lastTouchDistance) {
+        // Pinch zoom
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        const distance = Math.hypot(
+          touch2.clientX - touch1.clientX,
+          touch2.clientY - touch1.clientY
+        );
+
+        const scale = distance / lastTouchDistance;
+        const newZoom = Math.max(0.1, Math.min(10, zoom * scale));
+
+        const rect = containerRef.current?.getBoundingClientRect();
+        if (rect) {
+          const centerX = touchStart.x - rect.left;
+          const centerY = touchStart.y - rect.top;
+
+          const worldX = (centerX - panX) / zoom;
+          const worldY = (centerY - panY) / zoom;
+
+          setPanX(centerX - worldX * newZoom);
+          setPanY(centerY - worldY * newZoom);
+          setZoom(newZoom);
+        }
+
+        setLastTouchDistance(distance);
+      }
+    };
+
+    const handleTouchEnd = () => {
+      setIsDragging(false);
+      setTouchStart(null);
+      setLastTouchDistance(null);
+    };
+
+    if (isDragging || touchStart) {
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
+      document.addEventListener('touchend', handleTouchEnd);
+      return () => {
+        document.removeEventListener('touchmove', handleTouchMove);
+        document.removeEventListener('touchend', handleTouchEnd);
+      };
+    }
+  }, [isDragging, dragStart, touchStart, lastTouchDistance, zoom, panX, panY]);
 
   // Reset zoom and pan
   const resetView = useCallback(() => {
@@ -225,27 +307,28 @@ export function PatternPreview() {
   return (
     <div className="h-full flex flex-col bg-muted/30">
       <div className="border-b border-border">
-        <div className="flex items-center justify-between p-1 sm:p-2">
-          <div>
+        <div className="flex items-center justify-between p-2 sm:p-2 gap-2">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <Palette className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-semibold">Pattern Preview</h3>
+              <Palette className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+              <h3 className="text-base sm:text-lg font-semibold truncate">Pattern Preview</h3>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground truncate">
               {pattern.width} × {pattern.height} stitches •{' '}
               {pattern.palette.length} colors
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={zoomOut}
               disabled={zoom <= 0.1}
+              className="h-8 w-8 sm:h-9 sm:w-auto sm:px-3"
             >
-              <ZoomOut className="h-4 w-4" />
+              <ZoomOut className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
-            <span className="text-sm text-muted-foreground min-w-12 text-center">
+            <span className="text-xs sm:text-sm text-muted-foreground min-w-10 sm:min-w-12 text-center">
               {Math.round(zoom * 100)}%
             </span>
             <Button
@@ -253,11 +336,17 @@ export function PatternPreview() {
               size="sm"
               onClick={zoomIn}
               disabled={zoom >= 10}
+              className="h-8 w-8 sm:h-9 sm:w-auto sm:px-3"
             >
-              <ZoomIn className="h-4 w-4" />
+              <ZoomIn className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
-            <Button variant="outline" size="sm" onClick={resetView}>
-              <Maximize2 className="h-4 w-4" />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={resetView}
+              className="h-8 w-8 sm:h-9 sm:w-auto sm:px-3"
+            >
+              <Maximize2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
           </div>
         </div>
@@ -265,8 +354,9 @@ export function PatternPreview() {
       <div className="flex-1 min-h-0 flex flex-col p-4">
         <div
           ref={containerRef}
-          className="rounded-lg bg-muted p-2 sm:p-4 overflow-auto flex-1 relative cursor-grab active:cursor-grabbing"
+          className="rounded-lg bg-muted p-2 sm:p-4 overflow-auto flex-1 relative cursor-grab active:cursor-grabbing touch-none"
           onMouseDown={handleMouseDown}
+          onTouchStart={handleTouchStart}
           style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
         >
           <div
