@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react';
 import { usePatternStore } from '../store/patternStore';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -13,51 +12,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ onClose }: SidebarProps) {
-  const { settings, updateSettings, generatePattern, isProcessing, originalImage, pattern, _hasHydrated, reset } = usePatternStore();
-  const regenerateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isInitialMountRef = useRef(true);
-
-  // Skip auto-regeneration on initial mount (when restoring from localStorage)
-  useEffect(() => {
-    if (_hasHydrated) {
-      // Wait a bit for everything to settle, then allow auto-regeneration
-      const timer = setTimeout(() => {
-        isInitialMountRef.current = false;
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [_hasHydrated]);
-
-  // Auto-regenerate pattern when grid dimensions change (debounced)
-  useEffect(() => {
-    // Don't auto-regenerate on initial mount or if not hydrated yet
-    if (isInitialMountRef.current || !_hasHydrated) {
-      return;
-    }
-
-    if (pattern && originalImage && !isProcessing) {
-      // Only regenerate if dimensions actually changed
-      const dimensionsChanged = pattern.width !== settings.gridWidth || pattern.height !== settings.gridHeight;
-      
-      if (dimensionsChanged) {
-        // Clear existing timeout
-        if (regenerateTimeoutRef.current) {
-          clearTimeout(regenerateTimeoutRef.current);
-        }
-
-        // Set new timeout to regenerate after user stops typing (500ms delay)
-        regenerateTimeoutRef.current = setTimeout(() => {
-          generatePattern();
-        }, 500);
-      }
-
-      return () => {
-        if (regenerateTimeoutRef.current) {
-          clearTimeout(regenerateTimeoutRef.current);
-        }
-      };
-    }
-  }, [settings.gridWidth, settings.gridHeight, pattern?.width, pattern?.height, originalImage, isProcessing, generatePattern, _hasHydrated]);
+  const { settings, updateSettings, generatePattern, isProcessing, originalImage, pattern, reset } = usePatternStore();
 
   const handleGridWidthChange = (value: number) => {
     updateSettings({ gridWidth: value });
