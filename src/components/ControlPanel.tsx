@@ -171,7 +171,13 @@ export function ControlPanel() {
 
         <Button
           className="w-full"
-          onClick={generatePattern}
+          onClick={() => {
+            if (!isProcessing && originalImage) {
+              generatePattern().catch((err) => {
+                console.error('Error generating pattern:', err);
+              });
+            }
+          }}
           disabled={!originalImage || isProcessing}
           size="lg"
         >

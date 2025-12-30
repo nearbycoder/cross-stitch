@@ -263,11 +263,13 @@ export async function applyQuantizedColors(
   );
 
   const data = newImageData.data;
-  const chunkSize = 50000; // Larger chunks since we're faster now
   const totalPixels = data.length / 4;
+  
+  // Detect mobile and use smaller chunks
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const chunkSize = isMobile ? 10000 : 50000; // Much smaller chunks on mobile
 
   // Pre-compute lookup table for faster matching
-  // Use a simple hash-based lookup for RGB values
   const colorCache = new Map<string, RGBColor>();
   
   // Pre-compute squared distances for all quantized colors (avoid sqrt)
@@ -321,9 +323,10 @@ export async function applyQuantizedColors(
       // Keep alpha channel unchanged
     }
     
-    // Yield less frequently since we're faster now
-    if (i % (chunkSize * 4) === 0) {
-      await yieldToBrowser();
+    // Always yield after each chunk, more frequently on mobile
+    await yieldToBrowser();
+    if (isMobile) {
+      await yieldToBrowser(); // Extra yield on mobile
     }
   }
 

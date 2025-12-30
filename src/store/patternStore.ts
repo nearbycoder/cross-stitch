@@ -81,10 +81,15 @@ async function mapImageToGridChunked(
   const totalCells = gridWidth * gridHeight;
   
   // Use smaller chunks on mobile or for large grids
-  // Mobile: 10 rows, Desktop large grids (>150x150): 25 rows, Desktop normal: 50 rows
+  // Mobile: 5 rows for very large grids, 10 for normal, Desktop large grids (>150x150): 25 rows, Desktop normal: 50 rows
   let chunkSize: number;
   if (isMobile) {
-    chunkSize = 10; // Much smaller chunks on mobile
+    // Even smaller chunks for very large grids on mobile
+    if (totalCells > 25000) { // > 158x158
+      chunkSize = 5; // Very small chunks for 200x200 on mobile
+    } else {
+      chunkSize = 10;
+    }
   } else if (totalCells > 22500) { // > 150x150
     chunkSize = 25;
   } else {
@@ -152,8 +157,12 @@ async function mapImageToGridChunked(
       
       // Yield more frequently on mobile
       await yieldToBrowser();
-      if (isMobile && (startY / chunkSize) % 2 === 0) {
-        await yieldToBrowser(); // Extra yield every other chunk on mobile
+      if (isMobile) {
+        await yieldToBrowser(); // Always extra yield on mobile
+        // For very large grids, yield even more frequently
+        if (totalCells > 25000 && (startY / chunkSize) % 2 === 0) {
+          await yieldToBrowser(); // Triple yield for 200x200 on mobile
+        }
       }
     }
     
@@ -233,8 +242,12 @@ async function mapImageToGridChunked(
     }
     
     await yieldToBrowser();
-    if (isMobile && (startY / chunkSize) % 2 === 0) {
-      await yieldToBrowser(); // Extra yield every other chunk on mobile
+    if (isMobile) {
+      await yieldToBrowser(); // Always extra yield on mobile
+      // For very large grids, yield even more frequently
+      if (totalCells > 25000 && (startY / chunkSize) % 2 === 0) {
+        await yieldToBrowser(); // Triple yield for 200x200 on mobile
+      }
     }
   }
   

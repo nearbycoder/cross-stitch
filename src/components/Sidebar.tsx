@@ -227,7 +227,13 @@ export function Sidebar({ onClose }: SidebarProps) {
             <div className="space-y-2.5">
               <Button
                 className="w-full h-11 text-base font-semibold shadow-md hover:shadow-lg transition-all duration-200 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
-                onClick={generatePattern}
+                onClick={() => {
+                  if (!isProcessing && originalImage) {
+                    generatePattern().catch((err) => {
+                      console.error('Error generating pattern:', err);
+                    });
+                  }
+                }}
                 disabled={!originalImage || isProcessing}
                 size="lg"
               >
