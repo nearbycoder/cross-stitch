@@ -115,7 +115,7 @@ export function ProjectSelector() {
         <Button
           variant="outline"
           size="sm"
-          className="w-full justify-between border-2 hover:bg-accent/50 transition-all"
+          className="w-full justify-between border-border/70 bg-card/70 hover:bg-card shadow-sm transition-all"
         >
           <span className="flex items-center gap-2 truncate">
             <FolderOpen className="h-4 w-4 flex-shrink-0" />
@@ -126,9 +126,9 @@ export function ProjectSelector() {
           <ChevronDown className="h-4 w-4 flex-shrink-0 opacity-50" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-card/95 border-border/70 backdrop-blur-xl">
         <DialogHeader>
-          <DialogTitle>Your Patterns</DialogTitle>
+          <DialogTitle className="font-display text-xl">Your Patterns</DialogTitle>
           <DialogDescription>
             {projects.length === 0
               ? 'Create your first pattern project'
@@ -148,10 +148,10 @@ export function ProjectSelector() {
               projects.map((project) => (
                 <div
                   key={project.id}
-                  className={`group relative flex items-center gap-2 p-3 rounded-lg border transition-all ${
+                  className={`group relative flex items-center gap-2 p-3 rounded-2xl border transition-all ${
                     project.id === currentProjectId
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:border-primary/50 hover:bg-accent/30 cursor-pointer'
+                      ? 'border-primary/40 bg-primary/10 shadow-sm'
+                      : 'border-border/60 bg-card/70 hover:border-primary/40 hover:bg-card cursor-pointer'
                   }`}
                   onClick={() => {
                     if (editingId !== project.id && deleteConfirmId !== project.id) {
@@ -216,7 +216,7 @@ export function ProjectSelector() {
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-sm truncate">{project.name}</span>
                           {project.id === currentProjectId && (
-                            <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                            <span className="text-[10px] bg-primary/15 text-primary px-2 py-0.5 rounded-full font-semibold">
                               Active
                             </span>
                           )}
@@ -255,7 +255,7 @@ export function ProjectSelector() {
         </ScrollArea>
 
         <DialogFooter>
-          <Button onClick={handleCreateProject} className="w-full">
+          <Button onClick={handleCreateProject} className="w-full rounded-xl bg-gradient-to-r from-primary via-primary/90 to-[hsl(var(--chart-4))]">
             <Plus className="h-4 w-4 mr-2" />
             New Pattern
           </Button>

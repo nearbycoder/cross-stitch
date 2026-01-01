@@ -296,7 +296,11 @@ export function PatternModal() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button
+          variant="outline"
+          size="sm"
+          className="bg-card/80 border-border/70 shadow-sm hover:bg-card"
+        >
           <Maximize2 className="mr-2 h-4 w-4" />
           Full Screen View
         </Button>
@@ -304,9 +308,9 @@ export function PatternModal() {
       <DialogContent className="max-w-[100vw] max-h-[100vh] w-screen h-screen flex flex-col p-0 gap-0 m-0 rounded-none overflow-hidden">
         <div className="flex flex-col h-full min-h-0">
           {/* Color Keys Header */}
-          <div className="flex-shrink-0 p-4 border-b border-border bg-background overflow-y-auto">
+          <div className="flex-shrink-0 p-4 border-b border-border/60 bg-card/80 backdrop-blur-xl overflow-y-auto">
             <div className="flex items-center mb-3 justify-end">
-              <div className="flex items-center gap-2 ">
+              <div className="flex items-center gap-2 rounded-full border border-border/60 bg-card/80 p-1 shadow-sm">
                 <Button
                   variant="outline"
                   size="sm"
@@ -340,13 +344,13 @@ export function PatternModal() {
               {pattern.palette.map((color, index) => (
                 <div
                   key={`${color.code}-${color.symbol}-${index}`}
-                  className="flex items-center gap-1.5 px-2 py-1.5 rounded-md border bg-background"
+                  className="flex items-center gap-1.5 px-2 py-1.5 rounded-full border border-border/60 bg-card/80 shadow-sm"
                 >
                   <div
-                    className="w-6 h-6 rounded-md border-2 border-border shadow-sm flex-shrink-0"
+                    className="w-6 h-6 rounded-full border-2 border-border/60 shadow-sm flex-shrink-0"
                     style={{ backgroundColor: color.hex }}
                   />
-                  <div className="flex items-center justify-center w-4 h-4 rounded bg-muted font-bold text-xs flex-shrink-0">
+                  <div className="flex items-center justify-center w-4 h-4 rounded-full bg-muted font-bold text-xs flex-shrink-0">
                     {color.symbol}
                   </div>
                 </div>
@@ -355,11 +359,11 @@ export function PatternModal() {
           </div>
 
           {/* Pattern Canvas - Below Color Keys */}
-          <div className="flex-1 min-h-0 p-4 bg-muted/30 overflow-hidden">
+          <div className="flex-1 min-h-0 p-4 bg-card/60 overflow-hidden">
             <div
               ref={containerRef}
               className={cn(
-                'rounded-lg bg-muted p-4 overflow-auto h-full relative cursor-grab active:cursor-grabbing',
+                'rounded-2xl bg-card/70 border border-border/60 shadow-inner p-4 overflow-auto h-full relative cursor-grab active:cursor-grabbing bg-stitch-grid',
                 isDragging && 'cursor-grabbing'
               )}
               onMouseDown={handleMouseDown}
@@ -373,7 +377,7 @@ export function PatternModal() {
               >
                 <canvas
                   ref={canvasRef}
-                  className="rounded shadow-sm"
+                  className="rounded-xl shadow-sm"
                   key={isOpen ? 'open' : 'closed'}
                 />
               </div>

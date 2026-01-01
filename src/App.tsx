@@ -128,61 +128,62 @@ function App() {
   }, [_hasHydrated, originalImage, pattern, error, generatePattern]);
 
   return (
-    <div className="h-full w-full bg-gradient-to-br from-background via-background to-muted/30 overflow-hidden flex flex-col">
-      <div className="w-full h-full overflow-auto">
-        <div className="w-full min-h-full">
-          <div className="flex flex-col md:flex-row h-screen relative">
-            {/* Mobile sidebar overlay */}
-            {sidebarOpen && (
+    <div className="relative h-full w-full overflow-hidden bg-sand-wash">
+      <div className="pointer-events-none absolute inset-0 bg-stitch-grid opacity-50 dark:opacity-20" aria-hidden="true" />
+      <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(255,137,105,0.45),transparent_70%)] blur-3xl animate-float dark:opacity-40" aria-hidden="true" />
+      <div className="pointer-events-none absolute -bottom-28 -left-20 h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(64,175,190,0.45),transparent_70%)] blur-3xl animate-float-slow dark:opacity-40" aria-hidden="true" />
+      <div className="relative z-10 h-full w-full p-2 sm:p-4 md:p-6">
+        <div className="h-full w-full rounded-[30px] border border-border/70 bg-card/70 p-[1px] panel-shadow">
+          <div className="h-full w-full overflow-hidden rounded-[28px] bg-background/75 dark:bg-background/90 backdrop-blur-xl">
+            <div className="flex flex-col md:flex-row h-full relative">
+              {/* Mobile sidebar overlay */}
+              {sidebarOpen && (
+                <div
+                  className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-40 md:hidden animate-in fade-in duration-200"
+                  onClick={() => setSidebarOpen(false)}
+                />
+              )}
+
+              {/* Sidebar */}
               <div
-                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden animate-in fade-in duration-200"
-                onClick={() => setSidebarOpen(false)}
-              />
-            )}
-
-            {/* Sidebar */}
-            <div
-              className={`
-                fixed md:static inset-y-0 left-0 z-50 md:z-auto
-                transform transition-transform duration-300 ease-out
-                ${
-                  sidebarOpen
-                    ? 'translate-x-0'
-                    : '-translate-x-full md:translate-x-0'
-                }
-                w-80 max-w-[85vw] md:w-64 lg:w-80
-              `}
-              style={{
-                backgroundColor: 'hsl(var(--background))',
-                opacity: 1,
-              }}
-            >
-              <Sidebar onClose={() => setSidebarOpen(false)} />
-            </div>
-
-            {/* Main content */}
-            <main className="flex-1 flex flex-col p-2 sm:p-3 md:p-4 overflow-hidden min-h-0 relative">
-              {/* Mobile menu button */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-3 left-3 md:hidden z-30 bg-background/95 backdrop-blur-md border border-border/50 shadow-lg hover:bg-background hover:shadow-xl transition-all duration-200"
-                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className={`
+                  fixed md:static inset-y-0 left-0 z-50 md:z-auto
+                  transform transition-transform duration-300 ease-out
+                  ${
+                    sidebarOpen
+                      ? 'translate-x-0'
+                      : '-translate-x-full md:translate-x-0'
+                  }
+                  w-80 max-w-[85vw] md:w-64 lg:w-80
+                `}
               >
-                {sidebarOpen ? (
-                  <X className="h-5 w-5 transition-transform duration-200" />
-                ) : (
-                  <Menu className="h-5 w-5 transition-transform duration-200" />
-                )}
-              </Button>
+                <Sidebar onClose={() => setSidebarOpen(false)} />
+              </div>
 
-              <ResizableSplitPane
-                topChild={<PatternPreview />}
-                bottomChild={<ColorLegend />}
-                storageKey="pattern-split-position"
-                defaultSplit={50}
-              />
-            </main>
+              {/* Main content */}
+              <main className="flex-1 flex flex-col p-3 sm:p-4 md:p-6 overflow-hidden min-h-0 relative">
+                {/* Mobile menu button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-4 left-4 md:hidden z-30 bg-card/90 backdrop-blur-xl border border-border/60 shadow-lg hover:bg-card hover:shadow-xl transition-all duration-200"
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                >
+                  {sidebarOpen ? (
+                    <X className="h-5 w-5 transition-transform duration-200" />
+                  ) : (
+                    <Menu className="h-5 w-5 transition-transform duration-200" />
+                  )}
+                </Button>
+
+                <ResizableSplitPane
+                  topChild={<PatternPreview />}
+                  bottomChild={<ColorLegend />}
+                  storageKey="pattern-split-position"
+                  defaultSplit={50}
+                />
+              </main>
+            </div>
           </div>
         </div>
       </div>

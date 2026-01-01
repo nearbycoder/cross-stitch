@@ -99,7 +99,7 @@ export function ResizableSplitPane({
         <div className="flex-1 min-h-0 overflow-hidden">
           {topChild}
         </div>
-        <div className="flex-1 min-h-0 overflow-hidden border-t border-border">
+        <div className="flex-1 min-h-0 overflow-hidden border-t border-border/60">
           {bottomChild}
         </div>
       </div>
@@ -115,12 +115,14 @@ export function ResizableSplitPane({
         {topChild}
       </div>
       <div
-        className="relative flex items-center justify-center cursor-row-resize hover:bg-accent/50 transition-colors group flex-shrink-0 border-t border-b border-border"
-        style={{ height: '4px' }}
+        className="relative flex items-center justify-center cursor-row-resize group flex-shrink-0"
+        style={{ height: '14px' }}
         onMouseDown={handleMouseDown}
       >
-        <div className="absolute inset-0" />
-        <GripVertical className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
+        <div className="absolute inset-x-6 h-1 rounded-full bg-gradient-to-r from-transparent via-border to-transparent opacity-70" />
+        <div className="relative z-10 flex h-6 w-10 items-center justify-center rounded-full border border-border/60 bg-card/80 shadow-sm">
+          <GripVertical className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
+        </div>
       </div>
       <div
         className="min-h-0 overflow-hidden"

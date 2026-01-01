@@ -36,14 +36,15 @@ export function ImageUploader() {
   return (
     <div
       className={cn(
-        "border-2 border-dashed rounded-lg transition-all cursor-pointer hover:border-primary/50 hover:bg-accent/50 bg-background",
+        "group relative overflow-hidden rounded-2xl border border-dashed border-border/70 bg-card/70 transition-all cursor-pointer hover:border-primary/50 hover:bg-card shadow-sm hover:shadow-md",
         isProcessing && "opacity-50 cursor-not-allowed"
       )}
       onClick={handleClick}
       onDrop={handleDrop}
       onDragOver={handleDragOver}
     >
-      <div className="flex flex-col items-center justify-center p-8 sm:p-10 md:p-12">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,137,105,0.15),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="relative flex flex-col items-center justify-center p-8 sm:p-10 md:p-12">
         <input
           ref={fileInputRef}
           type="file"
@@ -54,11 +55,11 @@ export function ImageUploader() {
         />
 
         <div className="flex flex-col items-center gap-3 sm:gap-4 text-center">
-          <div className="rounded-full bg-primary/10 p-3 sm:p-4">
+          <div className="rounded-2xl bg-primary/15 p-3 sm:p-4 ring-1 ring-primary/20">
             <Upload className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
           </div>
           <div>
-            <p className="text-base sm:text-lg font-semibold">
+            <p className="text-base sm:text-lg font-semibold font-display">
               {isProcessing ? 'Loading...' : 'Click or drag an image to upload'}
             </p>
             <p className="text-xs sm:text-sm text-muted-foreground mt-2">

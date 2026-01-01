@@ -1,60 +1,64 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;600;700&family=Space+Grotesk:wght@400;500;600&display=swap");
 @import "tailwindcss";
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 142 76% 36%;
-    --primary-foreground: 355.7 100% 97.3%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 142 76% 36%;
-    --radius: 0.5rem;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --background: 35 100% 97%;
+    --foreground: 210 24% 16%;
+    --card: 36 60% 99%;
+    --card-foreground: 210 24% 16%;
+    --popover: 36 60% 99%;
+    --popover-foreground: 210 24% 16%;
+    --primary: 12 80% 55%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 178 40% 88%;
+    --secondary-foreground: 205 20% 20%;
+    --muted: 32 40% 92%;
+    --muted-foreground: 214 13% 38%;
+    --accent: 190 50% 86%;
+    --accent-foreground: 200 25% 20%;
+    --destructive: 350 70% 52%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 30 28% 86%;
+    --input: 30 28% 86%;
+    --ring: 12 80% 55%;
+    --radius: 1rem;
+    --chart-1: 12 78% 55%;
+    --chart-2: 178 45% 40%;
+    --chart-3: 200 35% 25%;
+    --chart-4: 45 90% 62%;
+    --chart-5: 330 65% 60%;
+    --font-body: "Space Grotesk", ui-sans-serif, system-ui, -apple-system,
+      BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-display: "Fraunces", "Times New Roman", serif;
   }
 
   :root.dark,
   .dark {
-    --background: 222.2 47.4% 11.2%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 47.4% 11.2%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 47.4% 11.2%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 142 76% 36%;
-    --primary-foreground: 355.7 100% 97.3%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 142 76% 36%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --background: 210 28% 8%;
+    --foreground: 36 40% 96%;
+    --card: 210 24% 12%;
+    --card-foreground: 36 40% 96%;
+    --popover: 210 24% 12%;
+    --popover-foreground: 36 40% 96%;
+    --primary: 14 78% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 200 20% 16%;
+    --secondary-foreground: 180 40% 92%;
+    --muted: 210 20% 16%;
+    --muted-foreground: 36 18% 72%;
+    --accent: 200 20% 18%;
+    --accent-foreground: 180 40% 92%;
+    --destructive: 350 65% 54%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 210 20% 20%;
+    --input: 210 20% 20%;
+    --ring: 14 78% 58%;
+    --chart-1: 12 78% 55%;
+    --chart-2: 178 45% 55%;
+    --chart-3: 45 80% 60%;
+    --chart-4: 195 55% 50%;
+    --chart-5: 330 65% 60%;
   }
 }
 
@@ -70,6 +74,16 @@
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
     font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: var(--font-body);
+    text-rendering: optimizeLegibility;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
   }
   #root {
     height: 100%;
@@ -78,16 +92,74 @@
 }
 
 @layer utilities {
+  .bg-stitch-grid {
+    background-image: radial-gradient(
+      circle at 1px 1px,
+      hsl(var(--foreground) / 0.08) 1px,
+      transparent 0
+    );
+    background-size: 24px 24px;
+  }
+
+  .bg-sand-wash {
+    background-image: linear-gradient(
+      160deg,
+      hsl(var(--background)) 0%,
+      hsl(var(--muted)) 60%,
+      hsl(var(--accent)) 100%
+    );
+  }
+
+  .panel-shadow {
+    box-shadow:
+      0 30px 80px rgba(15, 23, 42, 0.15),
+      0 12px 28px rgba(15, 23, 42, 0.08);
+  }
+
+  .panel-shadow-soft {
+    box-shadow:
+      0 12px 24px rgba(15, 23, 42, 0.08),
+      0 4px 12px rgba(15, 23, 42, 0.06);
+  }
+
+  .glass-panel {
+    background: hsl(var(--card) / 0.75);
+    backdrop-filter: blur(18px);
+    border: 1px solid hsl(var(--border) / 0.6);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+    50% {
+      transform: translate3d(0, -14px, 0);
+    }
+  }
+
+  .animate-float {
+    animation: float 10s ease-in-out infinite;
+  }
+
+  .animate-float-slow {
+    animation: float 16s ease-in-out infinite;
+  }
+
   /* Ensure slider components are visible */
   [data-radix-slider-track] {
     position: relative;
   }
-  
+
   [data-radix-slider-range] {
     position: absolute;
     height: 100%;
   }
-  
+
   [data-radix-slider-thumb] {
     position: absolute;
     transform: translate(-50%, -50%);

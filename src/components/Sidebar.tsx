@@ -7,6 +7,7 @@ import { Checkbox } from './ui/checkbox';
 import { Sparkles, Loader2, X, Upload } from 'lucide-react';
 import { ImageUploader } from './ImageUploader';
 import { ProjectSelector } from './ProjectSelector';
+import { ThemeToggle } from './ThemeToggle';
 import { useState, useEffect } from 'react';
 
 interface SidebarProps {
@@ -42,26 +43,21 @@ export function Sidebar({ onClose }: SidebarProps) {
 
   return (
     <aside 
-      className="w-full h-full border-r border-border/50 flex flex-col overflow-hidden shadow-xl md:shadow-lg" 
-      style={{ 
-        backgroundColor: 'hsl(var(--background))',
-        opacity: 1,
-      }}
+      className="w-full h-full border-r border-border/60 bg-card/80 backdrop-blur-xl flex flex-col overflow-hidden shadow-2xl md:shadow-xl" 
     >
       <div
-        className="flex-shrink-0 p-4 sm:p-5 border-b border-border/50 bg-gradient-to-r from-background to-muted/20"
-        style={{
-          backgroundColor: 'hsl(var(--background))',
-          opacity: 1,
-        }}
+        className="flex-shrink-0 p-5 sm:p-6 border-b border-border/60 bg-card/70 backdrop-blur-xl"
       >
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-lg bg-primary/10">
+            <div className="p-2 rounded-2xl bg-primary/15 ring-1 ring-primary/20">
               <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-semibold tracking-tight">Cross Stitch</h2>
+              <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+                Pattern Studio
+              </p>
+              <h2 className="text-base sm:text-lg font-semibold tracking-tight font-display">Cross Stitch</h2>
               {originalImage && (
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {pattern ? `${pattern.width} × ${pattern.height}` : 'Ready'}
@@ -70,6 +66,7 @@ export function Sidebar({ onClose }: SidebarProps) {
             </div>
           </div>
           <div className="flex items-center gap-1">
+            <ThemeToggle />
             {onClose && (
               <Button
                 variant="ghost"
@@ -102,11 +99,7 @@ export function Sidebar({ onClose }: SidebarProps) {
       </div>
 
       <div 
-        className="flex-1 min-h-0 p-4 sm:p-5 space-y-6 overflow-y-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent" 
-        style={{ 
-          backgroundColor: 'hsl(var(--background))',
-          opacity: 1,
-        }}
+        className="flex-1 min-h-0 p-5 sm:p-6 space-y-6 overflow-y-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent bg-card/60" 
       >
         {!originalImage ? (
           <div className="py-8 sm:py-12">
@@ -114,7 +107,7 @@ export function Sidebar({ onClose }: SidebarProps) {
           </div>
         ) : (
           <>
-            <div className="space-y-3 p-4 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm">
+            <div className="space-y-3 p-4 rounded-2xl glass-panel shadow-sm">
               <div className="flex items-center justify-between">
                 <Label htmlFor="maxColors" className="text-sm font-medium">Max Colors</Label>
                 <Input
@@ -130,7 +123,7 @@ export function Sidebar({ onClose }: SidebarProps) {
                     }
                   }}
                   disabled={isProcessing}
-                  className="w-16 h-9 text-center text-sm font-semibold border-2 focus:border-primary transition-colors"
+                  className="w-16 h-9 text-center text-sm font-semibold bg-card/80 focus:border-primary/70 transition-colors"
                 />
               </div>
               <Slider
@@ -149,7 +142,7 @@ export function Sidebar({ onClose }: SidebarProps) {
               </div>
             </div>
 
-            <div className="space-y-4 p-4 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm">
+            <div className="space-y-4 p-4 rounded-2xl glass-panel shadow-sm">
               <div className="space-y-2">
                 <Label htmlFor="gridWidth" className="text-sm font-medium">Grid Width (stitches)</Label>
                 <Input
@@ -167,7 +160,7 @@ export function Sidebar({ onClose }: SidebarProps) {
                   }}
                   placeholder="100"
                   disabled={isProcessing}
-                  className="w-full border-2 focus:border-primary transition-colors"
+                  className="w-full bg-card/80 focus:border-primary/70 transition-colors"
                 />
               </div>
 
@@ -188,12 +181,12 @@ export function Sidebar({ onClose }: SidebarProps) {
                   }}
                   placeholder="100"
                   disabled={isProcessing}
-                  className="w-full border-2 focus:border-primary transition-colors"
+                  className="w-full bg-card/80 focus:border-primary/70 transition-colors"
                 />
               </div>
             </div>
 
-            <div className="space-y-2.5 p-4 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm">
+            <div className="space-y-2.5 p-4 rounded-2xl glass-panel shadow-sm">
               <div className="flex items-center space-x-3 group cursor-pointer">
                 <Checkbox
                   id="maintainAspectRatio"
@@ -228,7 +221,7 @@ export function Sidebar({ onClose }: SidebarProps) {
 
             <div className="space-y-2.5">
               <Button
-                className="w-full h-11 text-base font-semibold shadow-md hover:shadow-lg transition-all duration-200 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
+                className="w-full h-11 text-base font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 bg-gradient-to-r from-primary via-primary/90 to-[hsl(var(--chart-4))] hover:from-primary/90 hover:to-[hsl(var(--chart-4))]"
                 onClick={() => {
                   if (!isProcessing && originalImage) {
                     generatePattern().catch((err) => {
@@ -258,7 +251,7 @@ export function Sidebar({ onClose }: SidebarProps) {
               </Button>
               <Button
                 variant="outline"
-                className="w-full border-2 hover:bg-accent/50 transition-all duration-200"
+                className="w-full border-border/70 bg-card/70 hover:bg-card transition-all duration-200"
                 onClick={reset}
                 disabled={isProcessing}
                 size="sm"
