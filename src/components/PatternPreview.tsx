@@ -295,38 +295,48 @@ export function PatternPreview() {
 
   if (!pattern) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-center bg-muted/30">
-        <Palette className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 text-muted-foreground mb-3 sm:mb-4" />
-        <p className="text-sm sm:text-base md:text-lg text-muted-foreground">
-          Upload an image and generate a pattern to see the preview
+      <div className="h-full flex flex-col items-center justify-center text-center rounded-2xl border border-border/70 bg-card/70 shadow-sm px-6">
+        <div className="rounded-2xl bg-primary/10 p-3 ring-1 ring-primary/20 mb-4">
+          <Palette className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 text-primary" />
+        </div>
+        <h3 className="text-base sm:text-lg md:text-xl font-semibold font-display">
+          Start your stitch map
+        </h3>
+        <p className="text-sm sm:text-base text-muted-foreground mt-2 text-balance">
+          Upload an image and generate a pattern to see the preview.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="h-full flex flex-col bg-muted/30">
-      <div className="border-b border-border/50 bg-gradient-to-r from-background to-muted/20">
-        <div className="flex items-center justify-between p-3 sm:p-4 gap-3">
+    <div className="h-full flex flex-col rounded-2xl border border-border/70 bg-card/70 shadow-sm overflow-hidden">
+      <div className="border-b border-border/60 bg-card/80 backdrop-blur-xl">
+        <div className="flex items-center justify-between p-4 sm:p-5 gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2.5 mb-1.5">
-              <div className="p-1.5 rounded-lg bg-primary/10">
+              <div className="p-2 rounded-2xl bg-primary/15 ring-1 ring-primary/20">
                 <Palette className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
               </div>
-              <h3 className="text-base sm:text-lg font-semibold truncate tracking-tight">Pattern Preview</h3>
+              <h3 className="text-base sm:text-lg font-semibold truncate tracking-tight font-display">
+                Pattern Preview
+              </h3>
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground truncate ml-8 sm:ml-9">
-              {pattern.width} × {pattern.height} stitches •{' '}
-              {pattern.palette.length} colors
-            </p>
+            <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-muted-foreground ml-8 sm:ml-9">
+              <span className="truncate">{pattern.width} × {pattern.height} stitches</span>
+              <span className="hidden sm:inline">•</span>
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                {pattern.palette.length} colors
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5 sm:gap-2 bg-muted/30 p-1 rounded-lg border border-border/50">
+          <div className="flex items-center gap-1.5 sm:gap-2 bg-card/80 p-1 rounded-xl border border-border/60 shadow-sm">
             <Button
               variant="ghost"
               size="sm"
               onClick={zoomOut}
               disabled={zoom <= 0.1}
-              className="h-8 w-8 sm:h-9 sm:w-auto sm:px-3 hover:bg-background transition-all"
+              className="h-8 w-8 sm:h-9 sm:w-auto sm:px-3 hover:bg-card transition-all"
             >
               <ZoomOut className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
@@ -338,7 +348,7 @@ export function PatternPreview() {
               size="sm"
               onClick={zoomIn}
               disabled={zoom >= 10}
-              className="h-8 w-8 sm:h-9 sm:w-auto sm:px-3 hover:bg-background transition-all"
+              className="h-8 w-8 sm:h-9 sm:w-auto sm:px-3 hover:bg-card transition-all"
             >
               <ZoomIn className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
@@ -346,17 +356,17 @@ export function PatternPreview() {
               variant="ghost" 
               size="sm" 
               onClick={resetView}
-              className="h-8 w-8 sm:h-9 sm:w-auto sm:px-3 hover:bg-background transition-all"
+              className="h-8 w-8 sm:h-9 sm:w-auto sm:px-3 hover:bg-card transition-all"
             >
               <Maximize2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
           </div>
         </div>
       </div>
-      <div className="flex-1 min-h-0 flex flex-col p-3 sm:p-4">
+      <div className="flex-1 min-h-0 flex flex-col p-4 sm:p-5">
         <div
           ref={containerRef}
-          className="rounded-xl bg-muted/50 border border-border/50 shadow-inner p-2 sm:p-4 overflow-auto flex-1 relative cursor-grab active:cursor-grabbing touch-none transition-shadow duration-200 hover:shadow-lg"
+          className="rounded-2xl bg-card/70 border border-border/60 shadow-inner p-3 sm:p-4 overflow-auto flex-1 relative cursor-grab active:cursor-grabbing touch-none transition-shadow duration-200 hover:shadow-lg bg-stitch-grid"
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
           style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
@@ -368,7 +378,7 @@ export function PatternPreview() {
               transformOrigin: '0 0',
             }}
           >
-            <canvas ref={canvasRef} className="rounded shadow-sm" />
+            <canvas ref={canvasRef} className="rounded-xl shadow-sm" />
           </div>
         </div>
       </div>
